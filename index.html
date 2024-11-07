@@ -31,40 +31,65 @@
     <button id="home-button" onclick="goHome()" style="display:none;">Go to Home</button>
   </div>
   
-<!-- Admin Dashboard Section -->
 <div id="admin-dashboard" style="display: none;">
     <h2>Admin Dashboard</h2>
-    
-    <!-- User Selection and Export Button -->
-    <div>
-        <label for="user-select">Select User:</label>
-        <select id="user-select" onchange="viewUserTasks()">
-            <option value="">--Select User--</option>
-            <option value="30362040">User 30362040</option>
-            <option value="30362041">User 30362041</option>
-            <option value="30362042">User 30362042</option>
-            <option value="30362043">User 30362043</option>
-            <option value="20323313">User 20323313</option>
-        </select>
-        <button onclick="exportToExcel()">Export to Excel</button>
-    </div>
 
-    <!-- User Task History Table -->
     <div id="user-history">
-        <h3>User Task History</h3>
-        <table id="adminTaskList" border="1">
-            <thead>
+        <h3>User Task Histories (Last 40 Days)</h3>
+
+        <!-- Table for each user -->
+        <div>
+            <h4>User 30362040</h4>
+            <table id="table-30362040" border="1">
                 <tr>
                     <th>Date</th>
                     <th>Completed Tasks</th>
                 </tr>
-            </thead>
-            <tbody>
-                <!-- Task data will be populated here by JavaScript -->
-            </tbody>
-        </table>
+            </table>
+        </div>
+
+        <div>
+            <h4>User 30362041</h4>
+            <table id="table-30362041" border="1">
+                <tr>
+                    <th>Date</th>
+                    <th>Completed Tasks</th>
+                </tr>
+            </table>
+        </div>
+
+        <div>
+            <h4>User 30362042</h4>
+            <table id="table-30362042" border="1">
+                <tr>
+                    <th>Date</th>
+                    <th>Completed Tasks</th>
+                </tr>
+            </table>
+        </div>
+
+        <div>
+            <h4>User 30362043</h4>
+            <table id="table-30362043" border="1">
+                <tr>
+                    <th>Date</th>
+                    <th>Completed Tasks</th>
+                </tr>
+            </table>
+        </div>
+
+        <div>
+            <h4>User 20323313</h4>
+            <table id="table-20323313" border="1">
+                <tr>
+                    <th>Date</th>
+                    <th>Completed Tasks</th>
+                </tr>
+            </table>
+        </div>
     </div>
 </div>
+s
 
   
  
