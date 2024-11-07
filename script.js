@@ -7,10 +7,11 @@ let users = {
 };
 let currentUser = null;
 
-// Initialize user task history in localStorage if not already present
+// Initialize or load user task history from localStorage
 if (!localStorage.getItem("userTaskHistory")) {
     localStorage.setItem("userTaskHistory", JSON.stringify({}));
 }
+let userTaskHistory = JSON.parse(localStorage.getItem("userTaskHistory"));
 
 function login() {
     const username = document.getElementById("username").value;
@@ -19,6 +20,7 @@ function login() {
     if (username === "admin" && password === "admin123") {
         document.getElementById("login-section").style.display = "none";
         document.getElementById("admin-dashboard").style.display = "block";
+        loadAdminData();
     } else if (username in users && users[username].password === password) {
         currentUser = username;
         document.getElementById("login-section").style.display = "none";
@@ -47,37 +49,45 @@ function loadUserTasks() {
         const row = document.createElement("tr");
         row.innerHTML = `
             <td>${task.task}</td>
-            <td><input type="checkbox" id="task-${index}"></td>
+            <td><input type="checkbox" id="task-${index}" ${isTaskCompletedToday() ? "disabled" : ""}></td>
         `;
         taskList.appendChild(row);
     });
 }
 
+function isTaskCompletedToday() {
+    const today = new Date().toLocaleDateString();
+    return userTaskHistory[currentUser] && userTaskHistory[currentUser].some(entry => entry.date === today);
+}
+
 function submitTasks() {
+    if (isTaskCompletedToday()) {
+        alert("You have already submitted today's tasks.");
+        return;
+    }
+
     const completedTasks = [];
     users[currentUser].tasks.forEach((task, index) => {
         const checkbox = document.getElementById(`task-${index}`);
         if (checkbox.checked) {
-            completedTasks.push({
-                task: task.task,
-                date: new Date().toLocaleDateString()
-            });
+            completedTasks.push(task.task);
         }
     });
 
-    // Store daily task completion in task history
-    let userTaskHistory = JSON.parse(localStorage.getItem("userTaskHistory"));
+    // Save task completion in history with today's date
+    const today = new Date().toLocaleDateString();
     if (!userTaskHistory[currentUser]) {
         userTaskHistory[currentUser] = [];
     }
     userTaskHistory[currentUser].push({
-        date: new Date().toLocaleDateString(),
+        date: today,
         completedTasks: completedTasks
     });
     localStorage.setItem("userTaskHistory", JSON.stringify(userTaskHistory));
 
     alert("Tasks submitted successfully!");
     document.getElementById("home-button").style.display = "block";
+    loadUserTasks(); // Reload to disable checkboxes for the day
 }
 
 function goHome() {
@@ -86,50 +96,44 @@ function goHome() {
     document.getElementById("home-button").style.display = "none";
 }
 
-function viewUserTasks() {
-    const selectedUser = document.getElementById("user-select").value;
-    const adminTaskList = document.getElementById("adminTaskList");
-    adminTaskList.innerHTML = "";
-
-    let userTaskHistory = JSON.parse(localStorage.getItem("userTaskHistory"));
-
-    if (selectedUser && userTaskHistory[selectedUser]) {
-        userTaskHistory[selectedUser].forEach((entry) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${entry.date}</td>
-                <td>${entry.completedTasks.map(task => task.task).join(", ")}</td>
-            `;
-            adminTaskList.appendChild(row);
-        });
-    } else {
-        const row = document.createElement("tr");
-        row.innerHTML = `<td colspan="2">No completed tasks</td>`;
-        adminTaskList.appendChild(row);
-    }
+function loadAdminData() {
+    Object.keys(users).forEach(userId => {
+        const userTable = document.getElementById(`table-${userId}`);
+        if (userTable) {
+            userTable.innerHTML = "<tr><th>Date</th><th>Completed Tasks</th></tr>";
+            const userHistory = userTaskHistory[userId] || [];
+            userHistory.forEach(entry => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${entry.date}</td>
+                    <td>${entry.completedTasks.join(", ")}</td>
+                `;
+                userTable.appendChild(row);
+            });
+        }
+    });
 }
 
-function exportToExcel() {
-    let userTaskHistory = JSON.parse(localStorage.getItem("userTaskHistory"));
-    let selectedUser = document.getElementById("user-select").value;
+function exportToExcel(userId) {
+    const userHistory = userTaskHistory[userId] || [];
+    const tableData = [["Date", "Completed Tasks"]];
 
-    if (selectedUser && userTaskHistory[selectedUser]) {
-        let tableData = [["Date", "Completed Tasks"]];
+    userHistory.forEach(entry => {
+        tableData.push([entry.date, entry.completedTasks.join(", ")]);
+    });
 
-        userTaskHistory[selectedUser].forEach((entry) => {
-            tableData.push([entry.date, entry.completedTasks.map(task => task.task).join(", ")]);
-        });
+    const csvContent = "data:text/csv;charset=utf-8," + tableData.map(row => row.join(",")).join("\n");
 
-        let csvContent = "data:text/csv;charset=utf-8,"
-            + tableData.map(row => row.join(",")).join("\n");
+    const link = document.createElement("a");
+    link.setAttribute("href", encodeURI(csvContent));
+    link.setAttribute("download", `${userId}_task_history.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
 
-        let link = document.createElement("a");
-        link.setAttribute("href", encodeURI(csvContent));
-        link.setAttribute("download", `${selectedUser}_task_history.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    } else {
-        alert("No data available to export.");
-    }
+// Logout function for admin
+function logout() {
+    document.getElementById("admin-dashboard").style.display = "none";
+    document.getElementById("login-section").style.display = "block";
 }
