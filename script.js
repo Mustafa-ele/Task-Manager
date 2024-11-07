@@ -86,12 +86,14 @@ function submitTasks() {
     localStorage.setItem("userTaskHistory", JSON.stringify(userTaskHistory));
 
     alert("Tasks submitted successfully!");
+    document.getElementById("home-button").style.display = "block";
     loadUserTasks(); // Reload to disable checkboxes for the day
 }
 
 function goHome() {
     document.getElementById("user-dashboard").style.display = "none";
     document.getElementById("login-section").style.display = "block";
+    document.getElementById("home-button").style.display = "none";
 }
 
 function loadAdminData() {
